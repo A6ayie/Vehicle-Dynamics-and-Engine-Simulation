@@ -1,5 +1,6 @@
 #include <iostream>
 #include "Engine.h"
+#include "Transmission.h"
 
 int main() {
     // Create an engine: 7000 RPM max, 300 horsepower
@@ -20,6 +21,15 @@ int main() {
         std::cout << "Temp:     " << engine.getTemperature() << " F\n";
         std::cout << "Throttle: " << engine.getThrottle() * 100 << "%\n";
     }
+
+    Transmission transmission;
+    std::cout << "\nGear: " << transmission.getGear() << "\n";
+    std::cout << "Ratio: " << transmission.getGearRatio() << "\n";
+
+    transmission.shiftUp();
+    transmission.shiftUp();
+    std::cout << "Gear: " << transmission.getGear() << "\n";
+    std::cout << "Ratio: " << transmission.getGearRatio() << "\n";
 
     return 0;
 }

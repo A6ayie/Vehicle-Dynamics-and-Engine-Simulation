@@ -1,6 +1,7 @@
 #include <iostream>
 #include "Engine.h"
 #include "Transmission.h"
+#include "FuelTank.h"
 
 int main() {
     // Create an engine: 7000 RPM max, 300 horsepower
@@ -21,6 +22,7 @@ int main() {
         std::cout << "Temp:     " << engine.getTemperature() << " F\n";
         std::cout << "Throttle: " << engine.getThrottle() * 100 << "%\n";
     }
+    
 
     Transmission transmission;
     std::cout << "\nGear: " << transmission.getGear() << "\n";
@@ -30,6 +32,17 @@ int main() {
     transmission.shiftUp();
     std::cout << "Gear: " << transmission.getGear() << "\n";
     std::cout << "Ratio: " << transmission.getGearRatio() << "\n";
+
+
+    // after transmission test:
+    FuelTank tank(15.0);   // 15 gallon tank
+    std::cout << "\nFuel: " << tank.getFuelPercentage() << "%\n";
+
+    tank.consumeFuel(3.0);
+    std::cout << "After driving: " << tank.getFuelPercentage() << "%\n";
+
+    tank.refuel(1.0);
+    std::cout << "After refuel: " << tank.getFuelLevel() << " gallons\n";
 
     return 0;
 }

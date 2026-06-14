@@ -36,7 +36,7 @@ void Vehicle::update(double dt) {
     double targetSpeed = (engine.getRPM() / 7000.0)
                        * (0.65 / transmission.getGearRatio())
                        * 120.0;
-    speed += (targetSpeed - speed) * 2.0 * dt;
+    speed += (targetSpeed - speed) * 0.5 * dt;    
     if (speed < 0.0) speed = 0.0;
 
     // Fuel burn rate rises with RPM

@@ -1,48 +1,19 @@
 #include <iostream>
-#include "Engine.h"
-#include "Transmission.h"
-#include "FuelTank.h"
+#include "Vehicle.h"
 
 int main() {
-    // Create an engine: 7000 RPM max, 300 horsepower
-    Engine engine(7000.0, 300.0);
+    Vehicle car;
 
-    std::cout << "Engine started\n";
-    std::cout << "RPM: " << engine.getRPM() << "\n";
-    std::cout << "Temp: " << engine.getTemperature() << " F\n";
+    car.accelerate(1.0);   // full throttle
 
-    // Apply full throttle and simulate 3 seconds
-    engine.increaseThrottle(1.0);
-
-    for (int i = 0; i < 3; i++) {
-        engine.updateRPM(1.0);
-        engine.updateTemperature(1.0);
-        std::cout << "\n--- Second " << i + 1 << " ---\n";
-        std::cout << "RPM:      " << engine.getRPM() << "\n";
-        std::cout << "Temp:     " << engine.getTemperature() << " F\n";
-        std::cout << "Throttle: " << engine.getThrottle() * 100 << "%\n";
+    for (int i = 0; i < 5; i++) {
+        car.update(1.0);
+        std::cout << "--- Second " << i + 1 << " ---\n";
+        std::cout << "Speed: " << car.getSpeed()          << " mph\n";
+        std::cout << "RPM:   " << car.getRPM()            << "\n";
+        std::cout << "Gear:  " << car.getGear()           << "\n";
+        std::cout << "Fuel:  " << car.getFuelPercentage() << "%\n\n";
     }
-    
-
-    Transmission transmission;
-    std::cout << "\nGear: " << transmission.getGear() << "\n";
-    std::cout << "Ratio: " << transmission.getGearRatio() << "\n";
-
-    transmission.shiftUp();
-    transmission.shiftUp();
-    std::cout << "Gear: " << transmission.getGear() << "\n";
-    std::cout << "Ratio: " << transmission.getGearRatio() << "\n";
-
-
-    // after transmission test:
-    FuelTank tank(15.0);   // 15 gallon tank
-    std::cout << "\nFuel: " << tank.getFuelPercentage() << "%\n";
-
-    tank.consumeFuel(3.0);
-    std::cout << "After driving: " << tank.getFuelPercentage() << "%\n";
-
-    tank.refuel(1.0);
-    std::cout << "After refuel: " << tank.getFuelLevel() << " gallons\n";
 
     return 0;
 }

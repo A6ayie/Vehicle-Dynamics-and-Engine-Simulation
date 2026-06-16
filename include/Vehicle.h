@@ -15,6 +15,7 @@ public:
 
     void accelerate(double amount);
     void brake(double amount);
+    void liftOff();             // ← moved inside
     void shiftUp();
     void shiftDown();
     void update(double dt);
@@ -23,6 +24,7 @@ public:
     double getRPM()            const;
     double getTemperature()    const;
     double getFuelPercentage() const;
+    double getThrottle()       const;  // ← moved inside
     int    getGear()           const;
     bool   isRunning()         const;
 };

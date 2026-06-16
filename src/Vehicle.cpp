@@ -34,8 +34,9 @@ void Vehicle::update(double dt) {
     // Speed from RPM + gear ratio
     // Lower gear ratio = higher top speed in that gear
     double targetSpeed = (engine.getRPM() / 7000.0)
-                       * (0.65 / transmission.getGearRatio())
-                       * 120.0;
+                   * (0.65 / transmission.getGearRatio())
+                   * 120.0
+                   * engine.getThrottle();
     speed += (targetSpeed - speed) * 0.5 * dt;    
     if (speed < 0.0) speed = 0.0;
 
@@ -52,3 +53,9 @@ double Vehicle::getTemperature()    const { return engine.getTemperature(); }
 double Vehicle::getFuelPercentage() const { return fuelTank.getFuelPercentage(); }
 int    Vehicle::getGear()           const { return transmission.getGear(); }
 bool   Vehicle::isRunning()         const { return !fuelTank.isEmpty(); }
+
+void Vehicle::liftOff() {
+    engine.decreaseThrottle(0.05);
+}
+
+double Vehicle::getThrottle() const { return engine.getThrottle(); }

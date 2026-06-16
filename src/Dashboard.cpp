@@ -18,6 +18,8 @@ void Dashboard::display() const {
               << vehicle.getTemperature()    << " F\n";
     std::cout << "Fuel   : " << std::setw(6) << std::setprecision(1)
               << vehicle.getFuelPercentage() << "%\n";
+    std::cout << "Throttle: " << std::setw(5) << std::setprecision(1)
+              << vehicle.getThrottle() * 100 << "%\n";  // ← now inside the body
     std::cout << "Status : " << (vehicle.isRunning() ? "Running" : "STALLED") << "\n";
     std::cout << "===========================\n";
 }

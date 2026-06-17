@@ -1,8 +1,9 @@
 #include "Vehicle.h"
 #include <iostream>
 
-Vehicle::Vehicle()
-    : engine(7000.0, 300.0), fuelTank(15.0), speed(0.0)
+Vehicle::Vehicle(double mass, double maxRPM, double horsepower, double fuelCapacity)
+    : engine(maxRPM, horsepower), fuelTank(fuelCapacity), speed(0.0),
+      mass(mass)
 {}
 
 
@@ -37,7 +38,8 @@ void Vehicle::update(double dt) {
                    * (0.65 / transmission.getGearRatio())
                    * 120.0
                    * engine.getThrottle();
-    speed += (targetSpeed - speed) * 0.5 * dt;    
+    double accelerationFactor = 2800.0 / mass;
+    speed += (targetSpeed - speed) * 0.5 * accelerationFactor * dt;
     if (speed < 0.0) speed = 0.0;
 
     // Fuel burn rate rises with RPM

@@ -8,14 +8,15 @@ private:
     Engine       engine;
     Transmission transmission;
     FuelTank     fuelTank;
-    double       speed;    // mph
+    double       speed;
+    double       mass;
 
 public:
-    Vehicle();
+    Vehicle(double mass, double maxRPM, double horsepower, double fuelCapacity);
 
     void accelerate(double amount);
     void brake(double amount);
-    void liftOff();             // ← moved inside
+    void liftOff();
     void shiftUp();
     void shiftDown();
     void update(double dt);
@@ -24,7 +25,7 @@ public:
     double getRPM()            const;
     double getTemperature()    const;
     double getFuelPercentage() const;
-    double getThrottle()       const;  // ← moved inside
+    double getThrottle()       const;
     int    getGear()           const;
     bool   isRunning()         const;
 };

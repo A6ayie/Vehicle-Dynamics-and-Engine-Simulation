@@ -172,9 +172,72 @@ void drawHUD(sf::RenderWindow& window, sf::Font& font,
     window.draw(ctrl);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  MAIN
-// ─────────────────────────────────────────────────────────────────────────────
+
+void drawGauge(sf::RenderWindow& window, sf::Font& font,
+               float cx, float cy, float radius,
+               float value, float maxValue,
+               const std::string& label, sf::Color needleColor) {
+
+    const float START = 135.f;
+    const float SWEEP = 240.f;
+
+    // Gauge face
+    sf::CircleShape face(radius);
+    face.setOrigin({radius, radius});
+    face.setPosition({cx, cy});
+    face.setFillColor(sf::Color(15, 15, 20, 220));
+    face.setOutlineThickness(3.f);
+    face.setOutlineColor(needleColor);
+    window.draw(face);
+
+    // Tick marks
+    const int TICKS = 8;
+    for (int i = 0; i <= TICKS; i++) {
+        float t     = (float)i / TICKS;
+        float angle = (START + t * SWEEP) * 3.14159f / 180.f;
+        float outerR = radius * 0.92f;
+        float innerR = radius * 0.76f;
+        sf::Vertex tick[2] = {
+            sf::Vertex{{cx + outerR * std::cos(angle), cy + outerR * std::sin(angle)}, sf::Color(200, 200, 200)},
+            sf::Vertex{{cx + innerR * std::cos(angle), cy + innerR * std::sin(angle)}, sf::Color(200, 200, 200)}
+        };
+        window.draw(tick, 2, sf::PrimitiveType::Lines);
+    }
+
+    // Needle
+    float ratio      = std::min(value / maxValue, 1.0f);
+    float needleAngle = (START + ratio * SWEEP) * 3.14159f / 180.f;
+    float needleLen  = radius * 0.70f;
+    sf::Vertex needle[2] = {
+        sf::Vertex{{cx, cy}, sf::Color::White},
+        sf::Vertex{{cx + needleLen * std::cos(needleAngle),
+                    cy + needleLen * std::sin(needleAngle)}, needleColor}
+    };
+    window.draw(needle, 2, sf::PrimitiveType::Lines);
+
+    // Center hub
+    float hubR = radius * 0.07f;
+    sf::CircleShape hub(hubR);
+    hub.setOrigin({hubR, hubR});
+    hub.setPosition({cx, cy});
+    hub.setFillColor(needleColor);
+    window.draw(hub);
+
+    // Label and value
+    sf::Text lbl(font, label, 14);
+    lbl.setFillColor(sf::Color(180, 180, 180));
+    lbl.setOrigin({lbl.getLocalBounds().size.x / 2.f, 0.f});
+    lbl.setPosition({cx, cy + radius * 0.40f});
+    window.draw(lbl);
+
+    sf::Text val(font, std::to_string((int)value), 18);
+    val.setFillColor(needleColor);
+    val.setOrigin({val.getLocalBounds().size.x / 2.f, 0.f});
+    val.setPosition({cx, cy + radius * 0.58f});
+    window.draw(val);
+}
+
+
 int main() {
     SportsCar car;
     sf::Clock clock;
@@ -235,6 +298,10 @@ int main() {
         window.clear(sf::Color(8, 8, 20));
         drawScene(window, laneOffset);
         window.draw(carSprite);
+
+        drawGauge(window, font, 140.f, 490.f, 85.f, (float)car.getRPM(),  9000.f, "RPM",   sf::Color(255, 100,  50));
+        drawGauge(window, font, 660.f, 490.f, 85.f, (float)car.getSpeed(), 140.f, "km/h",  sf::Color(  0, 220, 200));
+        
         if (hasFont)
             drawHUD(window, font,
                     (float)car.getSpeed(),

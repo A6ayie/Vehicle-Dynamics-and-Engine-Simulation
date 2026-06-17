@@ -33,6 +33,7 @@ void Engine::updateTemperature(double dt) {
 
 //Getters
 double Engine::getRPM()         const { return rpm; }
+void Engine::setRPM(double newRPM) { rpm = std::clamp(newRPM, 800.0, maxRPM); }
 double Engine::getTemperature() const { return temperature; }
 double Engine::getHorsepower()  const { return horsepower; }
 double Engine::getTorque() const {

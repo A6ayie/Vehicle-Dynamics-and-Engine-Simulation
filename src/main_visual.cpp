@@ -259,10 +259,27 @@ int main() {
         carSprite.setScale({0.95f, 0.95f});
         carSprite.setPosition({400.f, 580.f});
 
+        sf::Texture truckTexture;
+        if (!truckTexture.loadFromFile("assets/truck.png"))
+            return -1;
+        sf::Sprite truckSprite(truckTexture);
+        truckSprite.setOrigin({180.f, 360.f});
+        truckSprite.setScale({0.95f, 0.95f});
+        truckSprite.setPosition({400.f, 580.f});
+
+        sf::Texture economyTexture;
+        if (!economyTexture.loadFromFile("assets/economy.png"))
+            return -1;
+        sf::Sprite economySprite(economyTexture);
+        economySprite.setOrigin({180.f, 360.f});
+        economySprite.setScale({0.95f, 0.95f});
+        economySprite.setPosition({400.f, 580.f});
+
     sf::RenderWindow window(sf::VideoMode({W, H}), "Vehicle Dynamics Simulator");
     window.setFramerateLimit(60);
 
     // ── Vehicle selection screen ──────────────────────────────────────────────
+int vehicleType = 1;
 bool selected = false;
 while (window.isOpen() && !selected) {
     while (const auto event = window.pollEvent()) {
@@ -270,14 +287,17 @@ while (window.isOpen() && !selected) {
         if (const auto* key = event->getIf<sf::Event::KeyPressed>()) {
             if (key->code == sf::Keyboard::Key::Num1) {
                 car = std::make_unique<SportsCar>();
+                vehicleType = 1;
                 selected = true;
             }
             if (key->code == sf::Keyboard::Key::Num2) {
                 car = std::make_unique<Truck>();
+                vehicleType = 2;
                 selected = true;
             }
             if (key->code == sf::Keyboard::Key::Num3) {
                 car = std::make_unique<EconomyCar>();
+                vehicleType = 3;
                 selected = true;
             }
         }
@@ -353,13 +373,15 @@ while (window.isOpen() && !selected) {
         car->update(dt);
 
         // ── Road scroll: faster car = faster lane markings ───────────────────
-        laneOffset += (float)(car->getSpeed() * dt * 0.004f);
+        laneOffset += (float)(car->getSpeed() * dt * 0.032f);
         if (laneOffset >= 1.f) laneOffset -= 1.f;
 
         // ── Draw ─────────────────────────────────────────────────────────────
         window.clear(sf::Color(8, 8, 20));
         drawScene(window, laneOffset);
-        window.draw(carSprite);
+        if (vehicleType == 1)      window.draw(carSprite);
+        else if (vehicleType == 2) window.draw(truckSprite);
+        else                       window.draw(economySprite);
 
         drawGauge(window, font, 140.f, 490.f, 85.f, (float)car->getRPM(),  9000.f, "RPM",   sf::Color(255, 100,  50));
         drawGauge(window, font, 660.f, 490.f, 85.f, (float)car->getSpeed(), 140.f, "km/h",  sf::Color(  0, 220, 200));

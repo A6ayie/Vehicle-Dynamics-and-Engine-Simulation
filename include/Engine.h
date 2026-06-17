@@ -19,6 +19,7 @@ public:
 
     // Getters
     double getRPM()         const;
+    void   setRPM(double newRPM);
     double getTemperature() const;
     double getHorsepower()  const;
     double getThrottle()    const;

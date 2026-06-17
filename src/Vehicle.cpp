@@ -18,8 +18,19 @@ void Vehicle::brake(double amount) {
     if (speed < 0.0) speed = 0.0;
 }
 
-void Vehicle::shiftUp()   { transmission.shiftUp(); }
-void Vehicle::shiftDown() { transmission.shiftDown(); }
+void Vehicle::shiftUp() {
+    double oldRatio = transmission.getGearRatio();
+    transmission.shiftUp();
+    double newRatio = transmission.getGearRatio();
+    engine.setRPM(engine.getRPM() * (newRatio / oldRatio));
+}
+
+void Vehicle::shiftDown() {
+    double oldRatio = transmission.getGearRatio();
+    transmission.shiftDown();
+    double newRatio = transmission.getGearRatio();
+    engine.setRPM(engine.getRPM() * (newRatio / oldRatio));
+}
 
 
 //Update
@@ -38,7 +49,7 @@ void Vehicle::update(double dt) {
                    * (0.65 / transmission.getGearRatio())
                    * 120.0
                    * engine.getThrottle();
-    double accelerationFactor = 2800.0 / mass;
+    double accelerationFactor = (engine.getHorsepower() / 500.0) * (2800.0 / mass);
     speed += (targetSpeed - speed) * 0.5 * accelerationFactor * dt;
     if (speed < 0.0) speed = 0.0;
     speed -= 0.00045 * speed * speed * dt;

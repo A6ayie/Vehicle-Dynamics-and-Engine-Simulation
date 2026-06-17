@@ -17,9 +17,11 @@ public:
     void updateRPM(double dt);           // dt = time step in seconds
     void updateTemperature(double dt);
 
-    // Getters — lets other classes READ values but not change them
+    // Getters
     double getRPM()         const;
     double getTemperature() const;
     double getHorsepower()  const;
     double getThrottle()    const;
+    double getTorque()      const;
+    bool   isOverheating()  const { return temperature >= 240.0; }
 };

@@ -1,4 +1,6 @@
 #include "Engine.h"
+#include <cmath>
+#include <algorithm>
 #include <algorithm>   // gives us std::clamp (keeps a value between two limits)
 
 Engine::Engine(double maxRPM, double horsepower)
@@ -33,4 +35,18 @@ void Engine::updateTemperature(double dt) {
 double Engine::getRPM()         const { return rpm; }
 double Engine::getTemperature() const { return temperature; }
 double Engine::getHorsepower()  const { return horsepower; }
-double Engine::getThrottle()    const { return throttle; }
+double Engine::getTorque() const {
+    double n = rpm / maxRPM;                          // ← no underscores
+    double baseTorque = horsepower * (n / 0.4) * std::exp(1.0 - n / 0.4) * throttle;
+
+    // Power loss above 240°F
+    double tempPenalty = 1.0;
+    if (temperature > 240.0) {                        // ← temperature, not temp_
+        tempPenalty = 1.0 - (temperature - 240.0) / 100.0;
+        if (tempPenalty < 0.0) tempPenalty = 0.0;
+    }
+
+    return baseTorque * tempPenalty;
+}
+
+double Engine::getThrottle() const { return throttle; } 

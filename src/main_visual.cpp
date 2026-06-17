@@ -242,8 +242,9 @@ int main() {
     SportsCar car;
     sf::Clock clock;
     float laneOffset = 0.f;
-
-    // Load a system font — correct macOS path
+    bool wHeld = false;
+    bool sHeld = false;
+    
     sf::Font font;
     bool hasFont = font.openFromFile("/System/Library/Fonts/Supplemental/Arial.ttf");
     if (!hasFont)
@@ -272,20 +273,27 @@ int main() {
                 if (key->code == sf::Keyboard::Key::X) window.close();
                 if (key->code == sf::Keyboard::Key::E) car.shiftUp();
                 if (key->code == sf::Keyboard::Key::C) car.shiftDown();
+                if (key->code == sf::Keyboard::Key::W) wHeld = true;
+                if (key->code == sf::Keyboard::Key::S) sHeld = true;
             }
+
+            if (const auto* key = event->getIf<sf::Event::KeyReleased>()) {
+               if (key->code == sf::Keyboard::Key::W) wHeld = false;
+               if (key->code == sf::Keyboard::Key::S) sHeld = false;
+}
         }
 
         // ── Held keys: throttle and brake ────────────────────────────────────
         // accelerate(amount) raises throttle by amount each call
         // liftOff()          gently lowers throttle (engine braking)
         // brake(amount)      lowers throttle AND directly scrubs speed
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))
-            car.accelerate(2.0 * dt);   // full throttle in ~0.5 s
+        if (wHeld)
+            car.accelerate(2.0 * dt);
         else
-            car.liftOff();              // release gas → engine braking
+            car.liftOff();
 
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S))
-            car.brake(3.0 * dt);        // hard brake
+        if (sHeld)
+            car.brake(3.0 * dt);
 
         // ── Physics tick ─────────────────────────────────────────────────────
         car.update(dt);
@@ -301,7 +309,7 @@ int main() {
 
         drawGauge(window, font, 140.f, 490.f, 85.f, (float)car.getRPM(),  9000.f, "RPM",   sf::Color(255, 100,  50));
         drawGauge(window, font, 660.f, 490.f, 85.f, (float)car.getSpeed(), 140.f, "km/h",  sf::Color(  0, 220, 200));
-        
+
         if (hasFont)
             drawHUD(window, font,
                     (float)car.getSpeed(),

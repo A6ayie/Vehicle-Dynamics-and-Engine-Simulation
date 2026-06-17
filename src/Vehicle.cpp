@@ -41,6 +41,7 @@ void Vehicle::update(double dt) {
     double accelerationFactor = 2800.0 / mass;
     speed += (targetSpeed - speed) * 0.5 * accelerationFactor * dt;
     if (speed < 0.0) speed = 0.0;
+    speed -= 0.00045 * speed * speed * dt;
 
     // Fuel burn rate rises with RPM
     double burnRate = 0.0005 + (engine.getRPM() / 7000.0) * 0.003;

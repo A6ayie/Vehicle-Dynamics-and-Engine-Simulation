@@ -1,6 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include <cmath>
 #include <string>
+#include <memory>
 #include "VehicleTypes.h"
 
 const unsigned int W       = 800;
@@ -239,7 +240,7 @@ void drawGauge(sf::RenderWindow& window, sf::Font& font,
 
 
 int main() {
-    SportsCar car;
+    std::unique_ptr<Vehicle> car;    
     sf::Clock clock;
     float laneOffset = 0.f;
     bool wHeld = false;
@@ -261,6 +262,59 @@ int main() {
     sf::RenderWindow window(sf::VideoMode({W, H}), "Vehicle Dynamics Simulator");
     window.setFramerateLimit(60);
 
+    // ── Vehicle selection screen ──────────────────────────────────────────────
+bool selected = false;
+while (window.isOpen() && !selected) {
+    while (const auto event = window.pollEvent()) {
+        if (event->is<sf::Event::Closed>()) window.close();
+        if (const auto* key = event->getIf<sf::Event::KeyPressed>()) {
+            if (key->code == sf::Keyboard::Key::Num1) {
+                car = std::make_unique<SportsCar>();
+                selected = true;
+            }
+            if (key->code == sf::Keyboard::Key::Num2) {
+                car = std::make_unique<Truck>();
+                selected = true;
+            }
+            if (key->code == sf::Keyboard::Key::Num3) {
+                car = std::make_unique<EconomyCar>();
+                selected = true;
+            }
+        }
+    }
+    window.clear(sf::Color(8, 8, 20));
+    if (hasFont) {
+        sf::Text title(font, "VEHICLE DYNAMICS SIMULATOR", 30);
+        title.setFillColor(sf::Color(0, 220, 200));
+        title.setOrigin({title.getLocalBounds().size.x / 2.f, 0.f});
+        title.setPosition({400.f, 80.f});
+        window.draw(title);
+
+        sf::Text opt1(font, "[1]  Sports Car    —  1000 HP  |  9000 RPM", 22);
+        opt1.setFillColor(sf::Color(255, 100, 50));
+        opt1.setPosition({160.f, 220.f});
+        window.draw(opt1);
+
+        sf::Text opt2(font, "[2]  Truck         —   350 HP  |  4500 RPM", 22);
+        opt2.setFillColor(sf::Color(200, 200, 200));
+        opt2.setPosition({160.f, 270.f});
+        window.draw(opt2);
+
+        sf::Text opt3(font, "[3]  Economy Car   —   130 HP  |  6500 RPM", 22);
+        opt3.setFillColor(sf::Color(100, 200, 100));
+        opt3.setPosition({160.f, 320.f});
+        window.draw(opt3);
+
+        sf::Text hint(font, "Press 1, 2, or 3 to select", 16);
+        hint.setFillColor(sf::Color(120, 120, 120));
+        hint.setOrigin({hint.getLocalBounds().size.x / 2.f, 0.f});
+        hint.setPosition({400.f, 420.f});
+        window.draw(hint);
+    }
+    window.display();
+}
+
+
     while (window.isOpen()) {
         float dt = clock.restart().asSeconds();
         if (dt > 0.05f) dt = 0.05f;  // cap dt so physics can't explode on lag
@@ -271,8 +325,8 @@ int main() {
                 window.close();
             if (const auto* key = event->getIf<sf::Event::KeyPressed>()) {
                 if (key->code == sf::Keyboard::Key::X) window.close();
-                if (key->code == sf::Keyboard::Key::E) car.shiftUp();
-                if (key->code == sf::Keyboard::Key::C) car.shiftDown();
+                if (key->code == sf::Keyboard::Key::E) car->shiftUp();
+                if (key->code == sf::Keyboard::Key::C) car->shiftDown();
                 if (key->code == sf::Keyboard::Key::W) wHeld = true;
                 if (key->code == sf::Keyboard::Key::S) sHeld = true;
             }
@@ -288,18 +342,18 @@ int main() {
         // liftOff()          gently lowers throttle (engine braking)
         // brake(amount)      lowers throttle AND directly scrubs speed
         if (wHeld)
-            car.accelerate(2.0 * dt);
+            car->accelerate(2.0 * dt);
         else
-            car.liftOff();
+            car->liftOff();
 
         if (sHeld)
-            car.brake(3.0 * dt);
+            car->brake(3.0 * dt);
 
         // ── Physics tick ─────────────────────────────────────────────────────
-        car.update(dt);
+        car->update(dt);
 
         // ── Road scroll: faster car = faster lane markings ───────────────────
-        laneOffset += (float)(car.getSpeed() * dt * 0.004f);
+        laneOffset += (float)(car->getSpeed() * dt * 0.004f);
         if (laneOffset >= 1.f) laneOffset -= 1.f;
 
         // ── Draw ─────────────────────────────────────────────────────────────
@@ -307,17 +361,17 @@ int main() {
         drawScene(window, laneOffset);
         window.draw(carSprite);
 
-        drawGauge(window, font, 140.f, 490.f, 85.f, (float)car.getRPM(),  9000.f, "RPM",   sf::Color(255, 100,  50));
-        drawGauge(window, font, 660.f, 490.f, 85.f, (float)car.getSpeed(), 140.f, "km/h",  sf::Color(  0, 220, 200));
+        drawGauge(window, font, 140.f, 490.f, 85.f, (float)car->getRPM(),  9000.f, "RPM",   sf::Color(255, 100,  50));
+        drawGauge(window, font, 660.f, 490.f, 85.f, (float)car->getSpeed(), 140.f, "km/h",  sf::Color(  0, 220, 200));
 
         if (hasFont)
             drawHUD(window, font,
-                    (float)car.getSpeed(),
-                    (float)car.getRPM(),
-                    car.getGear(),
-                    (float)car.getThrottle(),
-                    (float)car.getTemperature(),
-                    car.getFuelPercentage());
+                    (float)car->getSpeed(),
+                    (float)car->getRPM(),
+                    car->getGear(),
+                    (float)car->getThrottle(),
+                    (float)car->getTemperature(),
+                    car->getFuelPercentage());
         window.display();
     }
 

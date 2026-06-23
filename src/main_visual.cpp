@@ -13,20 +13,25 @@ const float        HORIZON = 280.f;
 // ─────────────────────────────────────────────────────────────────────────────
 void drawScene(sf::RenderWindow& window, float laneOffset) {
 
-    // Sky — two-tone: very dark at top, slightly lighter near horizon
-    sf::RectangleShape skyTop({(float)W, HORIZON * 0.6f});
-    skyTop.setFillColor(sf::Color(8, 14, 50));
-    window.draw(skyTop);
+    // Sky — smooth gradient from deep blue at top to pale sky at horizon
+    sf::VertexArray sky(sf::PrimitiveType::TriangleStrip, 4);
+    sky[0] = sf::Vertex{{0.f,      0.f},     sf::Color(10,  40, 120)};
+    sky[1] = sf::Vertex{{(float)W, 0.f},     sf::Color(10,  40, 120)};
+    sky[2] = sf::Vertex{{0.f,      HORIZON}, sf::Color(160, 215, 255)};
+    sky[3] = sf::Vertex{{(float)W, HORIZON}, sf::Color(160, 215, 255)};
+    window.draw(sky);
 
-    sf::RectangleShape skyLow({(float)W, HORIZON * 0.4f});
-    skyLow.setPosition({0.f, HORIZON * 0.6f});
-    skyLow.setFillColor(sf::Color(22, 55, 125));
-    window.draw(skyLow);
+    // Sun (drawn before grass so it sits in the sky)
+    sf::CircleShape sun(38.f);
+    sun.setOrigin({38.f, 38.f});
+    sun.setPosition({660.f, 55.f});
+    sun.setFillColor(sf::Color(255, 248, 120));
+    window.draw(sun);
 
     // Grass
     sf::RectangleShape grass({(float)W, H - HORIZON});
     grass.setPosition({0.f, HORIZON});
-    grass.setFillColor(sf::Color(20, 92, 20));
+    grass.setFillColor(sf::Color(55, 155, 45));
     window.draw(grass);
 
     // Road trapezoid
@@ -91,65 +96,72 @@ void drawHUD(sf::RenderWindow& window, sf::Font& font,
     bool overheating = (tempF > 240.f);
     bool redline     = (rpm  > 7800.f);
 
-    // Semi-transparent background panel
-    sf::RectangleShape panel({215.f, 175.f});
+    // Panel background
+    sf::RectangleShape panel({240.f, 200.f});
     panel.setPosition({10.f, 10.f});
-    panel.setFillColor(sf::Color(0, 0, 0, 150));
-    panel.setOutlineThickness(1.f);
-    panel.setOutlineColor(sf::Color(0, 180, 160, 100));
+    panel.setFillColor(sf::Color(5, 5, 10, 175));
+    panel.setOutlineThickness(2.f);
+    panel.setOutlineColor(sf::Color(0, 200, 180, 160));
     window.draw(panel);
 
     // Speed
-    sf::Text speedTxt(font, "SPD   " + std::to_string((int)speed) + " km/h", 22);
-    speedTxt.setFillColor(sf::Color(0, 220, 200));
-    speedTxt.setPosition({20.f, 18.f});
+    sf::Text speedTxt(font, "SPD    " + std::to_string((int)speed) + " km/h", 19);
+    speedTxt.setFillColor(sf::Color(0, 230, 210));
+    speedTxt.setPosition({22.f, 20.f});
     window.draw(speedTxt);
 
-    // RPM — turns red near redline
-    sf::Color rpmColor = redline ? sf::Color(255, 55, 55) : sf::Color(0, 220, 200);
-    sf::Text rpmTxt(font, "RPM   " + std::to_string((int)rpm), 22);
+    // RPM
+    sf::Color rpmColor = redline ? sf::Color(255, 60, 60) : sf::Color(0, 230, 210);
+    sf::Text rpmTxt(font, "RPM    " + std::to_string((int)rpm), 19);
     rpmTxt.setFillColor(rpmColor);
-    rpmTxt.setPosition({20.f, 48.f});
+    rpmTxt.setPosition({22.f, 50.f});
     window.draw(rpmTxt);
 
     // Gear
-    sf::Text gearTxt(font, "GEAR  " + std::to_string(gear), 22);
-    gearTxt.setFillColor(sf::Color(255, 210, 50));
-    gearTxt.setPosition({20.f, 78.f});
+    sf::Text gearTxt(font, "GEAR   " + std::to_string(gear), 19);
+    gearTxt.setFillColor(sf::Color(255, 215, 55));
+    gearTxt.setPosition({22.f, 80.f});
     window.draw(gearTxt);
 
+    // Temp
+    sf::Color tempColor = (tempF > 240.f) ? sf::Color(255, 60, 0) : sf::Color(0, 230, 210);
+    sf::Text tempTxt(font, "TEMP   " + std::to_string((int)tempF) + " F", 19);
+    tempTxt.setFillColor(tempColor);
+    tempTxt.setPosition({22.f, 110.f});
+    window.draw(tempTxt);
+
     // Throttle bar
-    sf::RectangleShape barBg({175.f, 13.f});
-    barBg.setPosition({20.f, 118.f});
-    barBg.setFillColor(sf::Color(35, 35, 35));
-    window.draw(barBg);
-
-    sf::RectangleShape bar({throttle * 175.f, 13.f});
-    bar.setPosition({20.f, 118.f});
-    bar.setFillColor(sf::Color(255, 115, 0));
-    window.draw(bar);
-
-    sf::Text throtLbl(font, "THROTTLE", 13);
-    throtLbl.setFillColor(sf::Color(170, 170, 170));
-    throtLbl.setPosition({20.f, 135.f});
+    sf::Text throtLbl(font, "THROTTLE", 12);
+    throtLbl.setFillColor(sf::Color(140, 140, 140));
+    throtLbl.setPosition({22.f, 143.f});
     window.draw(throtLbl);
 
+    sf::RectangleShape barBg({196.f, 10.f});
+    barBg.setPosition({22.f, 160.f});
+    barBg.setFillColor(sf::Color(40, 40, 40));
+    window.draw(barBg);
+
+    sf::RectangleShape bar({throttle * 196.f, 10.f});
+    bar.setPosition({22.f, 160.f});
+    bar.setFillColor(sf::Color(255, 120, 0));
+    window.draw(bar);
+
     // Fuel bar
-    sf::RectangleShape fuelBg({175.f, 8.f});
-    fuelBg.setPosition({20.f, 158.f});
-    fuelBg.setFillColor(sf::Color(35, 35, 35));
+    sf::Text fuelLbl(font, "FUEL", 12);
+    fuelLbl.setFillColor(sf::Color(140, 140, 140));
+    fuelLbl.setPosition({22.f, 176.f});
+    window.draw(fuelLbl);
+
+    sf::RectangleShape fuelBg({196.f, 10.f});
+    fuelBg.setPosition({22.f, 192.f});
+    fuelBg.setFillColor(sf::Color(40, 40, 40));
     window.draw(fuelBg);
 
-    sf::Color fuelColor = (fuelPct < 0.2f) ? sf::Color(255, 60, 0) : sf::Color(0, 180, 80);
-    sf::RectangleShape fuelBar({(fuelPct / 100.f) * 175.f, 8.f});
-    fuelBar.setPosition({20.f, 158.f});
+    sf::Color fuelColor = (fuelPct < 20.f) ? sf::Color(255, 60, 0) : sf::Color(0, 190, 90);
+    sf::RectangleShape fuelBar({(fuelPct / 100.f) * 196.f, 10.f});
+    fuelBar.setPosition({22.f, 192.f});
     fuelBar.setFillColor(fuelColor);
     window.draw(fuelBar);
-
-    sf::Text fuelLbl(font, "FUEL", 13);
-    fuelLbl.setFillColor(sf::Color(170, 170, 170));
-    fuelLbl.setPosition({20.f, 170.f});
-    window.draw(fuelLbl);
 
     // ── Warnings ─────────────────────────────────────────────────────────────
     if (overheating) {
@@ -289,7 +301,9 @@ int main() {
     bool sHeld = false;
     
     sf::Font font;
-    bool hasFont = font.openFromFile("/System/Library/Fonts/Supplemental/Arial.ttf");
+    bool hasFont = font.openFromFile("/System/Library/Fonts/Monaco.ttf");
+    if (!hasFont)
+        hasFont = font.openFromFile("/System/Library/Fonts/Supplemental/Arial.ttf");
     if (!hasFont)
         hasFont = font.openFromFile("/System/Library/Fonts/Geneva.ttf");
 

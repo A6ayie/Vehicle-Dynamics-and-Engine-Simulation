@@ -1,17 +1,50 @@
 # Vehicle Dynamics & Engine Simulation System
 
-A real-time vehicle physics simulator built in C++ featuring a full engine model,
-6-speed manual transmission, and an interactive racing-style visual interface.
+A real-time vehicle physics simulator built in C++. It models how real car engines
+work — torque curves, gear ratios, aerodynamic drag, tyre friction — and visualises
+everything in a live racing-style interface. The same physics concepts are used in
+professional racing games.
+
+---
 
 ## Features
 
-- **Engine simulation** — Bell-curve torque model, RPM response, overheating system
-- **6-speed transmission** — Realistic gear ratios with drivetrain efficiency  
-- **Fuel system** — Consumption rate scales with RPM
-- **3 vehicle types** — Sports Car (1000hp), Truck (350hp), Economy Car (130hp)
-- **Perspective road** — Scrolling lane markings that speed up with vehicle velocity
-- **Circular HUD gauges** — Live speedometer and tachometer driven by the physics engine
-- **Warnings** — Overheating and redline alerts when pushing the car to limits
+### Physics Engine
+- **Torque curve model** — bell-curve RPM-to-torque response like a real engine
+- **6-speed manual transmission** — realistic gear ratios affecting top speed and acceleration
+- **Aerodynamic drag** — F = ½ρCdAv² formula slows the car at high speed
+- **Tyre friction / wheelspin** — low-grip launch at high throttle, especially in sports cars
+- **RPM drop on gear shift** — RPM recalculates correctly when shifting up or down
+- **Engine temperature** — rises with RPM, causes power loss if overheating
+- **Fuel system** — burn rate scales with RPM, fuel gauge drains in real time
+
+### Visual Interface
+- **Perspective road** — scrolling lane markings that speed up with the car
+- **Live circular gauges** — tachometer and speedometer driven by the physics engine
+- **Speed telemetry graph** — rolling 200-sample chart of your speed history
+- **HUD panel** — speed, RPM, gear, temperature, throttle bar, fuel bar
+- **0–100 km/h timer** — starts automatically from a standstill, records your best time
+- **Warnings** — REDLINE, OVERHEATING, WHEELSPIN alerts
+
+### Audio
+- **Menu music** — plays on the selection screen, fades to subtle background while driving
+- **Engine sounds** — one per vehicle category, pitch changes live with RPM
+
+### 9 Vehicles Across 3 Categories
+
+| # | Vehicle | HP | Max RPM | Weight |
+|---|---------|-----|---------|--------|
+| 1 | Sports Car | 1000 | 9000 | 2800 kg |
+| 2 | Ferrari 488 GTB | 660 | 8000 | 1500 kg |
+| 3 | Porsche 911 Turbo S | 640 | 7200 | 1640 kg |
+| 4 | BMW M3 Competition | 503 | 7200 | 1730 kg |
+| 5 | Truck | 350 | 4500 | 8000 kg |
+| 6 | Ford F-150 Raptor | 450 | 5000 | 2400 kg |
+| 7 | Economy Car | 130 | 6500 | 2400 kg |
+| 8 | Toyota Corolla | 169 | 6500 | 1350 kg |
+| 9 | Honda Civic | 158 | 6500 | 1300 kg |
+
+---
 
 ## Build & Run
 
@@ -30,29 +63,47 @@ make run
 make run-visual
 ```
 
+---
+
 ## Controls
-| Key | Action       |
-|-----|--------------|
-| W   | Accelerate   |
-| S   | Brake        |
-| E   | Shift up     |
-| C   | Shift down   |
-| X   | Quit         |
+
+| Key | Action |
+|-----|--------|
+| 1–9 | Select vehicle |
+| W | Accelerate |
+| S | Brake |
+| E | Shift up |
+| C | Shift down |
+| R | Back to vehicle select |
+| X | Quit |
+
+---
+
 ## Tech Stack
-- **C++17** — OOP with classes, inheritance, smart pointers
-- **SFML 3** — Graphics, window management, real-time input
+- **C++17** — OOP with classes, inheritance, composition, smart pointers (`std::unique_ptr`)
+- **SFML 3** — Graphics, window management, real-time input, audio
+
+---
+
 ## Project Structure
 ```
 src/
-  Engine.cpp        — Torque curve, RPM simulation, temperature
-  Transmission.cpp  — Gear ratios, wheel force calculation
-  FuelTank.cpp      — Fuel consumption and tracking
-  Vehicle.cpp       — Physics update loop combining all systems
-  main.cpp          — Terminal-based simulation
-  main_visual.cpp   — SFML racing-style visual interface
+  Engine.cpp          — Torque curve, RPM simulation, temperature model
+  Transmission.cpp    — Gear ratios, shift logic
+  FuelTank.cpp        — Fuel consumption and tracking
+  Vehicle.cpp         — Physics update loop combining all systems
+  main.cpp            — Terminal-based simulation
+  main_visual.cpp     — SFML racing-style visual interface
 include/
-  VehicleTypes.h    — SportsCar, Truck, EconomyCar via inheritance
+  VehicleTypes.h      — 9 vehicles via inheritance (SportsCar, Ferrari488, Porsche911,
+                        BMWM3, Truck, FordF150, EconomyCar, ToyotaCorolla, HondaCivic)
+assets/
+  car.png / truck.png / economy.png   — Vehicle sprites
+  menu.mp3                            — Selection screen music
+  engine_sports.mp3 / engine_truck.mp3 / engine_economy.mp3  — Engine sounds
 ```
+
+---
 
 ## Author
 Debbie — Computer Science, Wesleyan University

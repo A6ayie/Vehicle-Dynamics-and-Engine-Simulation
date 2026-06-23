@@ -93,13 +93,14 @@ void drawScene(sf::RenderWindow& window, float laneOffset) {
 // ─────────────────────────────────────────────────────────────────────────────
 void drawHUD(sf::RenderWindow& window, sf::Font& font,
              float speed, float rpm, int gear,
-             float throttle, float tempF, float fuelPct, bool wheelspin) {
+             float throttle, float tempF, float fuelPct,
+             bool wheelspin, float current0to100, float best0to100) {
 
     bool overheating = (tempF > 240.f);
     bool redline     = (rpm  > 7800.f);
 
     // Panel background
-    sf::RectangleShape panel({240.f, 200.f});
+    sf::RectangleShape panel({240.f, 250.f});
     panel.setPosition({10.f, 10.f});
     panel.setFillColor(sf::Color(5, 5, 10, 175));
     panel.setOutlineThickness(2.f);
@@ -164,6 +165,32 @@ void drawHUD(sf::RenderWindow& window, sf::Font& font,
     fuelBar.setPosition({22.f, 192.f});
     fuelBar.setFillColor(fuelColor);
     window.draw(fuelBar);
+
+    // ── 0-100 timer ──────────────────────────────────────────────────────────
+    sf::RectangleShape sep({196.f, 1.f});
+    sep.setPosition({22.f, 210.f});
+    sep.setFillColor(sf::Color(55, 55, 55));
+    window.draw(sep);
+
+    if (current0to100 > 0.f) {
+        int tenths = (int)(current0to100 * 10) % 10;
+        std::string ts = std::to_string((int)current0to100) + "." + std::to_string(tenths) + "s";
+        sf::Text timerTxt(font, "0-100: " + ts, 17);
+        timerTxt.setFillColor(sf::Color(255, 180, 0));
+        timerTxt.setPosition({22.f, 216.f});
+        window.draw(timerTxt);
+    }
+
+    if (best0to100 > 0.f) {
+        int hundredths = (int)(best0to100 * 100) % 100;
+        std::string h = std::to_string(hundredths);
+        if (h.size() == 1) h = "0" + h;
+        std::string bs = std::to_string((int)best0to100) + "." + h + "s";
+        sf::Text bestTxt(font, "BEST: " + bs, 17);
+        bestTxt.setFillColor(sf::Color(255, 215, 55));
+        bestTxt.setPosition({22.f, 236.f});
+        window.draw(bestTxt);
+    }
 
     // ── Warnings ─────────────────────────────────────────────────────────────
     if (overheating) {
@@ -354,54 +381,97 @@ wHeld = false;
 sHeld = false;
 while (window.isOpen()) {
 bool selected = false;
+float best0to100    = -1.f;
+float current0to100 = -1.f;
+bool  arming0to100  = true;
+sf::Clock sprintClock;
+struct CarRow { const char* key; const char* name; int hp; int rpm; int kg; };
+static const CarRow CARS[] = {
+    {"1","Sports Car",      1000,9000,2800},
+    {"2","Ferrari 488 GTB",  660,8000,1500},
+    {"3","Porsche 911 T.S",  640,7200,1640},
+    {"4","BMW M3 Comp.",     503,7200,1730},
+    {"5","Truck",            350,4500,8000},
+    {"6","Ford F-150 Rap.",  450,5000,2400},
+    {"7","Economy Car",      130,6500,2400},
+    {"8","Toyota Corolla",   169,6500,1350},
+    {"9","Honda Civic",      158,6500,1300},
+};
+
 while (window.isOpen() && !selected) {
     while (const auto event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) window.close();
         if (const auto* key = event->getIf<sf::Event::KeyPressed>()) {
-            if (key->code == sf::Keyboard::Key::Num1) {
-                car = std::make_unique<SportsCar>();
-                vehicleType = 1;
-                selected = true;
-            }
-            if (key->code == sf::Keyboard::Key::Num2) {
-                car = std::make_unique<Truck>();
-                vehicleType = 2;
-                selected = true;
-            }
-            if (key->code == sf::Keyboard::Key::Num3) {
-                car = std::make_unique<EconomyCar>();
-                vehicleType = 3;
-                selected = true;
-            }
+            auto pick = [&](int type, std::unique_ptr<Vehicle> v){
+                car = std::move(v); vehicleType = type; selected = true;
+            };
+            if (key->code == sf::Keyboard::Key::Num1) pick(1, std::make_unique<SportsCar>());
+            if (key->code == sf::Keyboard::Key::Num2) pick(2, std::make_unique<Ferrari488>());
+            if (key->code == sf::Keyboard::Key::Num3) pick(3, std::make_unique<Porsche911>());
+            if (key->code == sf::Keyboard::Key::Num4) pick(4, std::make_unique<BMWM3>());
+            if (key->code == sf::Keyboard::Key::Num5) pick(5, std::make_unique<Truck>());
+            if (key->code == sf::Keyboard::Key::Num6) pick(6, std::make_unique<FordF150>());
+            if (key->code == sf::Keyboard::Key::Num7) pick(7, std::make_unique<EconomyCar>());
+            if (key->code == sf::Keyboard::Key::Num8) pick(8, std::make_unique<ToyotaCorolla>());
+            if (key->code == sf::Keyboard::Key::Num9) pick(9, std::make_unique<HondaCivic>());
         }
     }
     window.clear(sf::Color(8, 8, 20));
     if (hasFont) {
-        sf::Text title(font, "VEHICLE DYNAMICS SIMULATOR", 30);
+        // Title
+        sf::Text title(font, "VEHICLE DYNAMICS SIMULATOR", 28);
         title.setFillColor(sf::Color(0, 220, 200));
         title.setOrigin({title.getLocalBounds().size.x / 2.f, 0.f});
-        title.setPosition({400.f, 80.f});
+        title.setPosition({400.f, 28.f});
         window.draw(title);
 
-        sf::Text opt1(font, "[1]  Sports Car    —  1000 HP  |  9000 RPM", 22);
-        opt1.setFillColor(sf::Color(255, 100, 50));
-        opt1.setPosition({160.f, 220.f});
-        window.draw(opt1);
+        // Column headers
+        const float COL_KEY  = 52.f;
+        const float COL_NAME = 82.f;
+        const float COL_HP   = 330.f;
+        const float COL_RPM  = 440.f;
+        const float COL_KG   = 580.f;
 
-        sf::Text opt2(font, "[2]  Truck         —   350 HP  |  4500 RPM", 22);
-        opt2.setFillColor(sf::Color(200, 200, 200));
-        opt2.setPosition({160.f, 270.f});
-        window.draw(opt2);
+        auto drawRow = [&](const CarRow& r, float y, sf::Color c) {
+            sf::Text k(font, r.key, 16);   k.setFillColor(c);  k.setPosition({COL_KEY,  y}); window.draw(k);
+            sf::Text n(font, r.name, 16);  n.setFillColor(c);  n.setPosition({COL_NAME, y}); window.draw(n);
+            sf::Text h(font, std::to_string(r.hp)  + " HP",  16); h.setFillColor(c); h.setPosition({COL_HP,  y}); window.draw(h);
+            sf::Text m(font, std::to_string(r.rpm) + " RPM", 16); m.setFillColor(c); m.setPosition({COL_RPM, y}); window.draw(m);
+            sf::Text w(font, std::to_string(r.kg)  + " kg",  16); w.setFillColor(c); w.setPosition({COL_KG,  y}); window.draw(w);
+        };
 
-        sf::Text opt3(font, "[3]  Economy Car   —   130 HP  |  6500 RPM", 22);
-        opt3.setFillColor(sf::Color(100, 200, 100));
-        opt3.setPosition({160.f, 320.f});
-        window.draw(opt3);
+        // Sports section
+        sf::Text sH(font, "--- SPORTS CARS ---", 14);
+        sH.setFillColor(sf::Color(255, 100, 50)); sH.setPosition({52.f, 88.f}); window.draw(sH);
+        drawRow(CARS[0], 110.f, sf::Color(255, 140, 80));
+        drawRow(CARS[1], 132.f, sf::Color(255, 140, 80));
+        drawRow(CARS[2], 154.f, sf::Color(255, 140, 80));
+        drawRow(CARS[3], 176.f, sf::Color(255, 140, 80));
 
-        sf::Text hint(font, "Press 1, 2, or 3 to select", 16);
-        hint.setFillColor(sf::Color(120, 120, 120));
+        // Trucks section
+        sf::Text tH(font, "--- TRUCKS ---", 14);
+        tH.setFillColor(sf::Color(180, 180, 180)); tH.setPosition({52.f, 210.f}); window.draw(tH);
+        drawRow(CARS[4], 232.f, sf::Color(210, 210, 210));
+        drawRow(CARS[5], 254.f, sf::Color(210, 210, 210));
+
+        // Economy section
+        sf::Text eH(font, "--- ECONOMY ---", 14);
+        eH.setFillColor(sf::Color(100, 210, 110)); eH.setPosition({52.f, 288.f}); window.draw(eH);
+        drawRow(CARS[6], 310.f, sf::Color(130, 220, 130));
+        drawRow(CARS[7], 332.f, sf::Color(130, 220, 130));
+        drawRow(CARS[8], 354.f, sf::Color(130, 220, 130));
+
+        // Column header labels
+        sf::Text hKey(font, "#",    13); hKey.setFillColor(sf::Color(80,80,80)); hKey.setPosition({COL_KEY,  70.f}); window.draw(hKey);
+        sf::Text hNm(font,  "VEHICLE",  13); hNm.setFillColor(sf::Color(80,80,80));  hNm.setPosition({COL_NAME, 70.f}); window.draw(hNm);
+        sf::Text hHp(font,  "POWER",    13); hHp.setFillColor(sf::Color(80,80,80));  hHp.setPosition({COL_HP,   70.f}); window.draw(hHp);
+        sf::Text hRpm(font, "MAX RPM",  13); hRpm.setFillColor(sf::Color(80,80,80)); hRpm.setPosition({COL_RPM,  70.f}); window.draw(hRpm);
+        sf::Text hKg(font,  "WEIGHT",   13); hKg.setFillColor(sf::Color(80,80,80));  hKg.setPosition({COL_KG,   70.f}); window.draw(hKg);
+
+        sf::Text hint(font, "Press 1-9 to select a vehicle", 15);
+        hint.setFillColor(sf::Color(100, 100, 100));
         hint.setOrigin({hint.getLocalBounds().size.x / 2.f, 0.f});
-        hint.setPosition({400.f, 420.f});
+        hint.setPosition({400.f, 400.f});
         window.draw(hint);
     }
     window.display();
@@ -410,8 +480,8 @@ while (window.isOpen() && !selected) {
     // ── Start engine music for selected vehicle ───────────────────────────────
     {
         std::string engineFile = "assets/engine_sports.mp3";
-        if (vehicleType == 2)      engineFile = "assets/engine_truck.mp3";
-        else if (vehicleType == 3) engineFile = "assets/engine_economy.mp3";
+        if (vehicleType == 5 || vehicleType == 6) engineFile = "assets/engine_truck.mp3";
+        else if (vehicleType >= 7)                engineFile = "assets/engine_economy.mp3";
         if (engineMusic.openFromFile(engineFile)) {
             engineMusic.setLooping(true);
             engineMusic.setVolume(70.f);
@@ -419,6 +489,10 @@ while (window.isOpen() && !selected) {
         }
         if (hasMenuMusic) menuMusic.setVolume(18.f);
     }
+
+    // Per-vehicle max RPM used for gauge and pitch
+    const float vehicleMaxRPMs[] = {0, 9000,8000,7200,7200, 4500,5000, 6500,6500,6500};
+    float vehicleMaxRPM = vehicleMaxRPMs[vehicleType];
 
     while (window.isOpen() && selected) {
         float dt = clock.restart().asSeconds();
@@ -457,17 +531,32 @@ while (window.isOpen() && !selected) {
 
         // ── Physics tick ─────────────────────────────────────────────────────
         car->update(dt);
-        speedHistory.push_back((float)car->getSpeed());
+        double spd = car->getSpeed();
+        speedHistory.push_back((float)spd);
         if ((int)speedHistory.size() > 200) speedHistory.pop_front();
 
+        // ── 0-100 km/h timer ─────────────────────────────────────────────────
+        if (spd < 3.0)                              arming0to100 = true;
+        if (arming0to100 && spd >= 3.0 && current0to100 < 0.f) {
+            sprintClock.restart();
+            current0to100 = 0.001f;
+            arming0to100  = false;
+        }
+        if (current0to100 > 0.f && spd < 100.0)
+            current0to100 = sprintClock.getElapsedTime().asSeconds();
+        if (current0to100 > 0.f && spd >= 100.0) {
+            float t = sprintClock.getElapsedTime().asSeconds();
+            if (best0to100 < 0.f || t < best0to100) best0to100 = t;
+            current0to100 = -1.f;
+        }
+
         // ── Road scroll: faster car = faster lane markings ───────────────────
-        laneOffset += (float)(car->getSpeed() * dt * 0.032f);
+        laneOffset += (float)(spd * dt * 0.032f);
         if (laneOffset >= 1.f) laneOffset -= 1.f;
 
         // ── Engine sound: pitch and volume follow RPM / throttle ─────────────
         {
-            float maxRPM = (vehicleType == 1) ? 9000.f : (vehicleType == 2) ? 4500.f : 6500.f;
-            float rpmRatio = (float)car->getRPM() / maxRPM;
+            float rpmRatio = (float)car->getRPM() / vehicleMaxRPM;
             engineMusic.setPitch(0.5f + rpmRatio * 1.5f);
             engineMusic.setVolume(45.f + (float)car->getThrottle() * 35.f);
         }
@@ -475,14 +564,13 @@ while (window.isOpen() && !selected) {
         // ── Draw ─────────────────────────────────────────────────────────────
         window.clear(sf::Color(8, 8, 20));
         drawScene(window, laneOffset);
-        if (vehicleType == 1)      window.draw(carSprite);
-        else if (vehicleType == 2) window.draw(truckSprite);
+        if      (vehicleType <= 4) window.draw(carSprite);
+        else if (vehicleType <= 6) window.draw(truckSprite);
         else                       window.draw(economySprite);
 
-        drawGauge(window, font, 140.f, 490.f, 85.f, (float)car->getRPM(),  9000.f, "RPM",   sf::Color(255, 100,  50));
-        drawGauge(window, font, 660.f, 490.f, 85.f, (float)car->getSpeed(), 140.f, "km/h",  sf::Color(  0, 220, 200));
+        drawGauge(window, font, 140.f, 490.f, 85.f, (float)car->getRPM(),  vehicleMaxRPM, "RPM",  sf::Color(255, 100,  50));
+        drawGauge(window, font, 660.f, 490.f, 85.f, (float)car->getSpeed(), 200.f,        "km/h", sf::Color(  0, 220, 200));
         if (hasFont) drawTelemetry(window, font, speedHistory);
-
 
         if (hasFont)
             drawHUD(window, font,
@@ -492,7 +580,9 @@ while (window.isOpen() && !selected) {
                     (float)car->getThrottle(),
                     (float)car->getTemperature(),
                     car->getFuelPercentage(),
-                    car->isWheelspinning());
+                    car->isWheelspinning(),
+                    current0to100,
+                    best0to100);
         window.display();
     }
 

@@ -155,22 +155,25 @@ void drawHUD(sf::RenderWindow& window, sf::Font& font,
     if (overheating) {
         sf::Text warn(font, "!! OVERHEATING !!", 20);
         warn.setFillColor(sf::Color(255, 60, 0));
-        warn.setPosition({(float)W / 2.f - 100.f, 14.f});
+        warn.setOrigin({warn.getLocalBounds().size.x / 2.f, 0.f});
+        warn.setPosition({(float)W / 2.f, 200.f});
         window.draw(warn);
     }
 
     if (redline) {
         sf::Text rl(font, "REDLINE", 18);
         rl.setFillColor(sf::Color(255, 70, 70));
-        rl.setPosition({(float)W - 125.f, 16.f});
+        rl.setOrigin({rl.getLocalBounds().size.x / 2.f, 0.f});
+        rl.setPosition({(float)W / 2.f, 225.f});
         window.draw(rl);
     }
 
     if (wheelspin) {
-    sf::Text ws(font, "WHEELSPIN", 20);
-    ws.setFillColor(sf::Color(255, 220, 0));
-    ws.setPosition({(float)W - 160.f, 50.f});
-    window.draw(ws);
+        sf::Text ws(font, "WHEELSPIN", 20);
+        ws.setFillColor(sf::Color(255, 220, 0));
+        ws.setOrigin({ws.getLocalBounds().size.x / 2.f, 0.f});
+        ws.setPosition({(float)W / 2.f, 250.f});
+        window.draw(ws);
     }
 
     // Controls reminder at bottom
@@ -244,11 +247,44 @@ void drawGauge(sf::RenderWindow& window, sf::Font& font,
     window.draw(val);
 }
 
+void drawTelemetry(sf::RenderWindow& window, sf::Font& font,
+                   const std::deque<float>& history) {
+
+    const float PX = 568.f, PY = 10.f;
+    const float PW = 220.f, PH = 120.f;
+    const float MAX_SPD = 150.f;
+    const int   SIZE    = 200;
+
+    sf::RectangleShape bg({PW, PH});
+    bg.setPosition({PX, PY});
+    bg.setFillColor(sf::Color(0, 0, 0, 150));
+    bg.setOutlineThickness(1.f);
+    bg.setOutlineColor(sf::Color(0, 180, 160, 100));
+    window.draw(bg);
+
+    sf::Text lbl(font, "SPEED TELEMETRY", 12);
+    lbl.setFillColor(sf::Color(150, 150, 150));
+    lbl.setPosition({PX + 6.f, PY + 4.f});
+    window.draw(lbl);
+
+    for (int i = 1; i < (int)history.size(); i++) {
+        float x1 = PX + (float)(i - 1) / SIZE * PW;
+        float x2 = PX + (float)i       / SIZE * PW;
+        float y1 = PY + PH - (history[i - 1] / MAX_SPD) * (PH - 20.f);
+        float y2 = PY + PH - (history[i]     / MAX_SPD) * (PH - 20.f);
+        sf::Vertex line[2] = {
+            sf::Vertex{{x1, y1}, sf::Color(0, 220, 200)},
+            sf::Vertex{{x2, y2}, sf::Color(0, 220, 200)}
+        };
+        window.draw(line, 2, sf::PrimitiveType::Lines);
+    }
+}
 
 int main() {
     std::unique_ptr<Vehicle> car;    
     sf::Clock clock;
     float laneOffset = 0.f;
+    std::deque<float> speedHistory;
     bool wHeld = false;
     bool sHeld = false;
     
@@ -383,6 +419,8 @@ while (window.isOpen() && !selected) {
 
         // ── Physics tick ─────────────────────────────────────────────────────
         car->update(dt);
+        speedHistory.push_back((float)car->getSpeed());
+        if ((int)speedHistory.size() > 200) speedHistory.pop_front();
 
         // ── Road scroll: faster car = faster lane markings ───────────────────
         laneOffset += (float)(car->getSpeed() * dt * 0.032f);
@@ -397,6 +435,8 @@ while (window.isOpen() && !selected) {
 
         drawGauge(window, font, 140.f, 490.f, 85.f, (float)car->getRPM(),  9000.f, "RPM",   sf::Color(255, 100,  50));
         drawGauge(window, font, 660.f, 490.f, 85.f, (float)car->getSpeed(), 140.f, "km/h",  sf::Color(  0, 220, 200));
+        if (hasFont) drawTelemetry(window, font, speedHistory);
+
 
         if (hasFont)
             drawHUD(window, font,

@@ -402,6 +402,7 @@ while (window.isOpen() && !selected) {
     while (const auto event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) window.close();
         if (const auto* key = event->getIf<sf::Event::KeyPressed>()) {
+            if (key->code == sf::Keyboard::Key::X) window.close();
             auto pick = [&](int type, std::unique_ptr<Vehicle> v){
                 car = std::move(v); vehicleType = type; selected = true;
             };
@@ -468,7 +469,7 @@ while (window.isOpen() && !selected) {
         sf::Text hRpm(font, "MAX RPM",  13); hRpm.setFillColor(sf::Color(80,80,80)); hRpm.setPosition({COL_RPM,  70.f}); window.draw(hRpm);
         sf::Text hKg(font,  "WEIGHT",   13); hKg.setFillColor(sf::Color(80,80,80));  hKg.setPosition({COL_KG,   70.f}); window.draw(hKg);
 
-        sf::Text hint(font, "Press 1-9 to select a vehicle", 15);
+        sf::Text hint(font, "Press 1-9 to select  |  X to quit", 15);
         hint.setFillColor(sf::Color(100, 100, 100));
         hint.setOrigin({hint.getLocalBounds().size.x / 2.f, 0.f});
         hint.setPosition({400.f, 400.f});

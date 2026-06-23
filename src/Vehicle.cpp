@@ -50,7 +50,10 @@ void Vehicle::update(double dt) {
                    * 120.0
                    * engine.getThrottle();
     double accelerationFactor = (engine.getHorsepower() / 500.0) * (2800.0 / mass);
-    speed += (targetSpeed - speed) * 0.5 * accelerationFactor * dt;
+    double gripFactor = 1.0;
+    if (engine.getThrottle() > 0.8 && speed < 30.0)
+        gripFactor = 0.4 + (speed / 30.0) * 0.6;
+    speed += (targetSpeed - speed) * 0.5 * accelerationFactor * dt * gripFactor;
     if (speed < 0.0) speed = 0.0;
     speed -= 0.00045 * speed * speed * dt;
 
@@ -73,3 +76,7 @@ void Vehicle::liftOff() {
 }
 
 double Vehicle::getThrottle() const { return engine.getThrottle(); }
+
+bool Vehicle::isWheelspinning() const {
+    return engine.getThrottle() > 0.8 && speed < 30.0;
+}

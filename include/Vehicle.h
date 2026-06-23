@@ -28,4 +28,5 @@ public:
     double getThrottle()       const;
     int    getGear()           const;
     bool   isRunning()         const;
+    bool   isWheelspinning()   const;
 };

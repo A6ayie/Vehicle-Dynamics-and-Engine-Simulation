@@ -86,7 +86,7 @@ void drawScene(sf::RenderWindow& window, float laneOffset) {
 // ─────────────────────────────────────────────────────────────────────────────
 void drawHUD(sf::RenderWindow& window, sf::Font& font,
              float speed, float rpm, int gear,
-             float throttle, float tempF, float fuelPct) {
+             float throttle, float tempF, float fuelPct, bool wheelspin) {
 
     bool overheating = (tempF > 240.f);
     bool redline     = (rpm  > 7800.f);
@@ -164,6 +164,13 @@ void drawHUD(sf::RenderWindow& window, sf::Font& font,
         rl.setFillColor(sf::Color(255, 70, 70));
         rl.setPosition({(float)W - 125.f, 16.f});
         window.draw(rl);
+    }
+
+    if (wheelspin) {
+    sf::Text ws(font, "WHEELSPIN", 20);
+    ws.setFillColor(sf::Color(255, 220, 0));
+    ws.setPosition({(float)W - 160.f, 50.f});
+    window.draw(ws);
     }
 
     // Controls reminder at bottom
@@ -398,7 +405,8 @@ while (window.isOpen() && !selected) {
                     car->getGear(),
                     (float)car->getThrottle(),
                     (float)car->getTemperature(),
-                    car->getFuelPercentage());
+                    car->getFuelPercentage(),
+                    car->isWheelspinning());
         window.display();
     }
 }

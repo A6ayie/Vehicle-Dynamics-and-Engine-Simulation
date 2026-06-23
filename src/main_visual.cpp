@@ -1,7 +1,9 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <cmath>
 #include <string>
 #include <memory>
+#include <deque>
 #include "VehicleTypes.h"
 
 const unsigned int W       = 800;
@@ -293,12 +295,22 @@ void drawTelemetry(sf::RenderWindow& window, sf::Font& font,
 }
 
 int main() {
-    std::unique_ptr<Vehicle> car;    
+    std::unique_ptr<Vehicle> car;
     sf::Clock clock;
     float laneOffset = 0.f;
     std::deque<float> speedHistory;
     bool wHeld = false;
     bool sHeld = false;
+
+    // ── Audio ─────────────────────────────────────────────────────────────────
+    sf::Music menuMusic;
+    sf::Music engineMusic;
+    bool hasMenuMusic    = menuMusic.openFromFile("assets/menu.mp3");
+    if (hasMenuMusic) {
+        menuMusic.setLooping(true);
+        menuMusic.setVolume(65.f);
+        menuMusic.play();
+    }
     
     sf::Font font;
     bool hasFont = font.openFromFile("/System/Library/Fonts/Monaco.ttf");
@@ -395,6 +407,18 @@ while (window.isOpen() && !selected) {
     window.display();
 }
 
+    // ── Start engine music for selected vehicle ───────────────────────────────
+    {
+        std::string engineFile = "assets/engine_sports.mp3";
+        if (vehicleType == 2)      engineFile = "assets/engine_truck.mp3";
+        else if (vehicleType == 3) engineFile = "assets/engine_economy.mp3";
+        if (engineMusic.openFromFile(engineFile)) {
+            engineMusic.setLooping(true);
+            engineMusic.setVolume(70.f);
+            engineMusic.play();
+        }
+        if (hasMenuMusic) menuMusic.setVolume(18.f);
+    }
 
     while (window.isOpen() && selected) {
         float dt = clock.restart().asSeconds();
@@ -440,6 +464,14 @@ while (window.isOpen() && !selected) {
         laneOffset += (float)(car->getSpeed() * dt * 0.032f);
         if (laneOffset >= 1.f) laneOffset -= 1.f;
 
+        // ── Engine sound: pitch and volume follow RPM / throttle ─────────────
+        {
+            float maxRPM = (vehicleType == 1) ? 9000.f : (vehicleType == 2) ? 4500.f : 6500.f;
+            float rpmRatio = (float)car->getRPM() / maxRPM;
+            engineMusic.setPitch(0.5f + rpmRatio * 1.5f);
+            engineMusic.setVolume(45.f + (float)car->getThrottle() * 35.f);
+        }
+
         // ── Draw ─────────────────────────────────────────────────────────────
         window.clear(sf::Color(8, 8, 20));
         drawScene(window, laneOffset);
@@ -463,6 +495,10 @@ while (window.isOpen() && !selected) {
                     car->isWheelspinning());
         window.display();
     }
+
+    // ── Back to selection: stop engine, restore menu music ───────────────────
+    engineMusic.stop();
+    if (hasMenuMusic) menuMusic.setVolume(65.f);
 }
     return 0;
 }

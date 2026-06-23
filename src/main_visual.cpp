@@ -167,8 +167,7 @@ void drawHUD(sf::RenderWindow& window, sf::Font& font,
     }
 
     // Controls reminder at bottom
-    sf::Text ctrl(font, "W/S = GAS/BRAKE     E/C = SHIFT UP/DOWN     X = QUIT", 13);
-    ctrl.setFillColor(sf::Color(110, 110, 110));
+    sf::Text ctrl(font, "W/S = GAS/BRAKE   E/C = SHIFT   R = CHANGE CAR   X = QUIT", 13);    ctrl.setFillColor(sf::Color(110, 110, 110));
     ctrl.setPosition({10.f, (float)H - 24.f});
     window.draw(ctrl);
 }
@@ -280,6 +279,11 @@ int main() {
 
     // ── Vehicle selection screen ──────────────────────────────────────────────
 int vehicleType = 1;
+car = nullptr;
+laneOffset = 0.f;
+wHeld = false;
+sHeld = false;
+while (window.isOpen()) {
 bool selected = false;
 while (window.isOpen() && !selected) {
     while (const auto event = window.pollEvent()) {
@@ -335,7 +339,7 @@ while (window.isOpen() && !selected) {
 }
 
 
-    while (window.isOpen()) {
+    while (window.isOpen() && selected) {
         float dt = clock.restart().asSeconds();
         if (dt > 0.05f) dt = 0.05f;  // cap dt so physics can't explode on lag
 
@@ -345,6 +349,7 @@ while (window.isOpen() && !selected) {
                 window.close();
             if (const auto* key = event->getIf<sf::Event::KeyPressed>()) {
                 if (key->code == sf::Keyboard::Key::X) window.close();
+                if (key->code == sf::Keyboard::Key::R) selected = false;
                 if (key->code == sf::Keyboard::Key::E) car->shiftUp();
                 if (key->code == sf::Keyboard::Key::C) car->shiftDown();
                 if (key->code == sf::Keyboard::Key::W) wHeld = true;
@@ -396,6 +401,6 @@ while (window.isOpen() && !selected) {
                     car->getFuelPercentage());
         window.display();
     }
-
+}
     return 0;
 }

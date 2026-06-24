@@ -34,13 +34,13 @@ professional racing games.
 
 | # | Vehicle | HP | Max RPM | Weight |
 |---|---------|-----|---------|--------|
-| 1 | Sports Car | 1000 | 9000 | 2800 kg |
+| 1 | Koenigsegg Agera | 1000 | 9000 | 2800 kg |
 | 2 | Ferrari 488 GTB | 660 | 8000 | 1500 kg |
 | 3 | Porsche 911 Turbo S | 640 | 7200 | 1640 kg |
 | 4 | BMW M3 Competition | 503 | 7200 | 1730 kg |
-| 5 | Truck | 350 | 4500 | 8000 kg |
+| 5 | Freightliner M2 | 350 | 4500 | 8000 kg |
 | 6 | Ford F-150 Raptor | 450 | 5000 | 2400 kg |
-| 7 | Economy Car | 130 | 6500 | 2400 kg |
+| 7 | Ford Fiesta | 130 | 6500 | 2400 kg |
 | 8 | Toyota Corolla | 169 | 6500 | 1350 kg |
 | 9 | Honda Civic | 158 | 6500 | 1300 kg |
 

@@ -94,13 +94,13 @@ void drawScene(sf::RenderWindow& window, float laneOffset) {
 void drawHUD(sf::RenderWindow& window, sf::Font& font,
              float speed, float rpm, int gear,
              float throttle, float tempF, float fuelPct,
-             bool wheelspin, float current0to100, float best0to100) {
+             bool redline, bool wheelspin,
+             float topSpeed, float current0to100, float best0to100) {
 
     bool overheating = (tempF > 240.f);
-    bool redline     = (rpm  > 7800.f);
 
     // Panel background
-    sf::RectangleShape panel({240.f, 250.f});
+    sf::RectangleShape panel({240.f, 265.f});
     panel.setPosition({10.f, 10.f});
     panel.setFillColor(sf::Color(5, 5, 10, 175));
     panel.setOutlineThickness(2.f);
@@ -110,28 +110,34 @@ void drawHUD(sf::RenderWindow& window, sf::Font& font,
     // Speed
     sf::Text speedTxt(font, "SPD    " + std::to_string((int)speed) + " km/h", 19);
     speedTxt.setFillColor(sf::Color(0, 230, 210));
-    speedTxt.setPosition({22.f, 20.f});
+    speedTxt.setPosition({22.f, 18.f});
     window.draw(speedTxt);
 
     // RPM
     sf::Color rpmColor = redline ? sf::Color(255, 60, 60) : sf::Color(0, 230, 210);
     sf::Text rpmTxt(font, "RPM    " + std::to_string((int)rpm), 19);
     rpmTxt.setFillColor(rpmColor);
-    rpmTxt.setPosition({22.f, 50.f});
+    rpmTxt.setPosition({22.f, 42.f});
     window.draw(rpmTxt);
 
     // Gear
     sf::Text gearTxt(font, "GEAR   " + std::to_string(gear), 19);
     gearTxt.setFillColor(sf::Color(255, 215, 55));
-    gearTxt.setPosition({22.f, 80.f});
+    gearTxt.setPosition({22.f, 66.f});
     window.draw(gearTxt);
 
     // Temp
-    sf::Color tempColor = (tempF > 240.f) ? sf::Color(255, 60, 0) : sf::Color(0, 230, 210);
+    sf::Color tempColor = overheating ? sf::Color(255, 60, 0) : sf::Color(0, 230, 210);
     sf::Text tempTxt(font, "TEMP   " + std::to_string((int)tempF) + " F", 19);
     tempTxt.setFillColor(tempColor);
-    tempTxt.setPosition({22.f, 110.f});
+    tempTxt.setPosition({22.f, 90.f});
     window.draw(tempTxt);
+
+    // Top speed
+    sf::Text topTxt(font, "TOP    " + std::to_string((int)topSpeed) + " km/h", 19);
+    topTxt.setFillColor(sf::Color(180, 130, 255));
+    topTxt.setPosition({22.f, 114.f});
+    window.draw(topTxt);
 
     // Throttle bar
     sf::Text throtLbl(font, "THROTTLE", 12);
@@ -140,35 +146,35 @@ void drawHUD(sf::RenderWindow& window, sf::Font& font,
     window.draw(throtLbl);
 
     sf::RectangleShape barBg({196.f, 10.f});
-    barBg.setPosition({22.f, 160.f});
+    barBg.setPosition({22.f, 158.f});
     barBg.setFillColor(sf::Color(40, 40, 40));
     window.draw(barBg);
 
     sf::RectangleShape bar({throttle * 196.f, 10.f});
-    bar.setPosition({22.f, 160.f});
+    bar.setPosition({22.f, 158.f});
     bar.setFillColor(sf::Color(255, 120, 0));
     window.draw(bar);
 
     // Fuel bar
     sf::Text fuelLbl(font, "FUEL", 12);
     fuelLbl.setFillColor(sf::Color(140, 140, 140));
-    fuelLbl.setPosition({22.f, 176.f});
+    fuelLbl.setPosition({22.f, 174.f});
     window.draw(fuelLbl);
 
     sf::RectangleShape fuelBg({196.f, 10.f});
-    fuelBg.setPosition({22.f, 192.f});
+    fuelBg.setPosition({22.f, 189.f});
     fuelBg.setFillColor(sf::Color(40, 40, 40));
     window.draw(fuelBg);
 
     sf::Color fuelColor = (fuelPct < 20.f) ? sf::Color(255, 60, 0) : sf::Color(0, 190, 90);
     sf::RectangleShape fuelBar({(fuelPct / 100.f) * 196.f, 10.f});
-    fuelBar.setPosition({22.f, 192.f});
+    fuelBar.setPosition({22.f, 189.f});
     fuelBar.setFillColor(fuelColor);
     window.draw(fuelBar);
 
     // ── 0-100 timer ──────────────────────────────────────────────────────────
     sf::RectangleShape sep({196.f, 1.f});
-    sep.setPosition({22.f, 210.f});
+    sep.setPosition({22.f, 207.f});
     sep.setFillColor(sf::Color(55, 55, 55));
     window.draw(sep);
 
@@ -177,7 +183,7 @@ void drawHUD(sf::RenderWindow& window, sf::Font& font,
         std::string ts = std::to_string((int)current0to100) + "." + std::to_string(tenths) + "s";
         sf::Text timerTxt(font, "0-100: " + ts, 17);
         timerTxt.setFillColor(sf::Color(255, 180, 0));
-        timerTxt.setPosition({22.f, 216.f});
+        timerTxt.setPosition({22.f, 213.f});
         window.draw(timerTxt);
     }
 
@@ -188,7 +194,7 @@ void drawHUD(sf::RenderWindow& window, sf::Font& font,
         std::string bs = std::to_string((int)best0to100) + "." + h + "s";
         sf::Text bestTxt(font, "BEST: " + bs, 17);
         bestTxt.setFillColor(sf::Color(255, 215, 55));
-        bestTxt.setPosition({22.f, 236.f});
+        bestTxt.setPosition({22.f, 235.f});
         window.draw(bestTxt);
     }
 
@@ -200,7 +206,6 @@ void drawHUD(sf::RenderWindow& window, sf::Font& font,
         warn.setPosition({(float)W / 2.f, 200.f});
         window.draw(warn);
     }
-
     if (redline) {
         sf::Text rl(font, "REDLINE", 18);
         rl.setFillColor(sf::Color(255, 70, 70));
@@ -208,7 +213,6 @@ void drawHUD(sf::RenderWindow& window, sf::Font& font,
         rl.setPosition({(float)W / 2.f, 225.f});
         window.draw(rl);
     }
-
     if (wheelspin) {
         sf::Text ws(font, "WHEELSPIN", 20);
         ws.setFillColor(sf::Color(255, 220, 0));
@@ -217,8 +221,9 @@ void drawHUD(sf::RenderWindow& window, sf::Font& font,
         window.draw(ws);
     }
 
-    // Controls reminder at bottom
-    sf::Text ctrl(font, "W/S = GAS/BRAKE   E/C = SHIFT   R = CHANGE CAR   X = QUIT", 13);    ctrl.setFillColor(sf::Color(110, 110, 110));
+    // Controls reminder
+    sf::Text ctrl(font, "W/S = GAS/BRAKE   E/C = SHIFT   R = CHANGE CAR   X = QUIT", 13);
+    ctrl.setFillColor(sf::Color(110, 110, 110));
     ctrl.setPosition({10.f, (float)H - 24.f});
     window.draw(ctrl);
 }
@@ -380,20 +385,23 @@ laneOffset = 0.f;
 wHeld = false;
 sHeld = false;
 while (window.isOpen()) {
-bool selected = false;
+bool selected       = false;
 float best0to100    = -1.f;
 float current0to100 = -1.f;
 bool  arming0to100  = true;
+float topSpeed      = 0.f;
+float redlineTimer  = 0.f;
+float wheelspinTimer= 0.f;
 sf::Clock sprintClock;
 struct CarRow { const char* key; const char* name; int hp; int rpm; int kg; };
 static const CarRow CARS[] = {
-    {"1","Sports Car",      1000,9000,2800},
+    {"1","Koenigsegg Agera", 1000,9000,2800},
     {"2","Ferrari 488 GTB",  660,8000,1500},
     {"3","Porsche 911 T.S",  640,7200,1640},
     {"4","BMW M3 Comp.",     503,7200,1730},
-    {"5","Truck",            350,4500,8000},
+    {"5","Freightliner M2",  350,4500,8000},
     {"6","Ford F-150 Rap.",  450,5000,2400},
-    {"7","Economy Car",      130,6500,2400},
+    {"7","Ford Fiesta",       130,6500,2400},
     {"8","Toyota Corolla",   169,6500,1350},
     {"9","Honda Civic",      158,6500,1300},
 };
@@ -551,6 +559,17 @@ while (window.isOpen() && !selected) {
             current0to100 = -1.f;
         }
 
+        // ── Top speed ─────────────────────────────────────────────────────────
+        if ((float)spd > topSpeed) topSpeed = (float)spd;
+
+        // ── Warning timers (delay display so they don't flash instantly) ──────
+        bool isRedlineNow   = ((float)car->getRPM() > vehicleMaxRPM * 0.89f);
+        bool isWheelspinNow = car->isWheelspinning();
+        if (isRedlineNow)    redlineTimer   += dt; else redlineTimer   = 0.f;
+        if (isWheelspinNow)  wheelspinTimer += dt; else wheelspinTimer = 0.f;
+        bool showRedline   = (redlineTimer   > 0.8f);
+        bool showWheelspin = (wheelspinTimer > 1.0f);
+
         // ── Road scroll: faster car = faster lane markings ───────────────────
         laneOffset += (float)(spd * dt * 0.032f);
         if (laneOffset >= 1.f) laneOffset -= 1.f;
@@ -581,9 +600,8 @@ while (window.isOpen() && !selected) {
                     (float)car->getThrottle(),
                     (float)car->getTemperature(),
                     car->getFuelPercentage(),
-                    car->isWheelspinning(),
-                    current0to100,
-                    best0to100);
+                    showRedline, showWheelspin,
+                    topSpeed, current0to100, best0to100);
         window.display();
     }
 

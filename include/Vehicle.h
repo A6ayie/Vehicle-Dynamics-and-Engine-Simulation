@@ -20,6 +20,7 @@ public:
     void shiftUp();
     void shiftDown();
     void update(double dt);
+    void setGearRatios(const double ratios[6]);
 
     double getSpeed()          const;
     double getRPM()            const;

@@ -56,6 +56,8 @@ void Vehicle::update(double dt) {
     speed += (targetSpeed - speed) * 0.5 * accelerationFactor * dt * gripFactor;
     if (speed < 0.0) speed = 0.0;
     speed -= 0.00045 * speed * speed * dt;
+    // Rolling resistance: constant tyre-on-road friction (~0.012 * 9.81 / 3.6)
+    if (speed > 0.1) speed -= 0.033 * dt;
 
     // Fuel burn rate rises with RPM
     double burnRate = 0.0005 + (engine.getRPM() / 7000.0) * 0.003;
@@ -76,6 +78,10 @@ void Vehicle::liftOff() {
 }
 
 double Vehicle::getThrottle() const { return engine.getThrottle(); }
+
+void Vehicle::setGearRatios(const double ratios[6]) {
+    transmission.setRatios(ratios);
+}
 
 bool Vehicle::isWheelspinning() const {
     return engine.getThrottle() > 0.92 && speed < 12.0;

@@ -29,6 +29,11 @@ void Transmission::shiftDown() {
     }
 }
 
+void Transmission::setRatios(const double ratios[6]) {
+    for (int i = 0; i < 6; i++)
+        gearRatios[i] = ratios[i];
+}
+
 //Getters
 int Transmission::getGear() const {
     return currentGear;

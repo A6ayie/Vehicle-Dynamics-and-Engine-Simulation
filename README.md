@@ -46,6 +46,33 @@ professional racing games.
 
 ---
 
+## Physics Model
+
+Each vehicle simulates the following forces:
+
+- **Drive force** — derived from torque curve: `T(n) = HP × (n/n_peak) × e^(1 − n/n_peak) × throttle`
+- **Aerodynamic drag** — `F_drag = 0.00045 × v²` (quadratic, speed-squared growth)
+- **Rolling resistance** — `F_roll = 0.033 km/h/s` (constant tyre-road friction)
+- **Tyre grip** — launch traction limited at high throttle + low speed
+
+Each vehicle uses real published gear ratios. For example, the Ferrari 488 GTB uses its actual 7-speed DCT ratios: 3.09 · 2.13 · 1.56 · 1.17 · 0.91 · 0.73.
+
+### Published vs Simulated 0–100 km/h Reference
+
+The built-in 0–100 km/h timer can be compared against manufacturer figures:
+
+| Vehicle | Published 0–100 | Notes |
+|---------|----------------|-------|
+| Koenigsegg Agera | 2.9 s | Hypercar reference |
+| Ferrari 488 GTB | 3.0 s | Real DCT ratios used |
+| Porsche 911 Turbo S | 2.7 s | PDK ratios used |
+| BMW M3 Competition | 3.9 s | 8-speed auto ratios |
+| Ford F-150 Raptor | 5.4 s | 10-speed auto (6 modelled) |
+| Toyota Corolla | 8.5 s | 6-speed auto ratios |
+| Honda Civic | 8.0 s | CVT approximated |
+| Ford Fiesta (130hp) | 12–14 s | Economy baseline |
+| Freightliner M2 | 35–40 s | Heavy commercial truck |
+
 ## Build & Run
 
 ### Requirements

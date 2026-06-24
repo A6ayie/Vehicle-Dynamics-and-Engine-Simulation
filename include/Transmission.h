@@ -11,6 +11,7 @@ public:
 
     void shiftUp();
     void shiftDown();
+    void setRatios(const double ratios[6]);
 
     int    getGear()      const;
     double getGearRatio() const;

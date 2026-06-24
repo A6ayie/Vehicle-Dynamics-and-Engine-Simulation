@@ -78,5 +78,5 @@ void Vehicle::liftOff() {
 double Vehicle::getThrottle() const { return engine.getThrottle(); }
 
 bool Vehicle::isWheelspinning() const {
-    return engine.getThrottle() > 0.8 && speed < 30.0;
+    return engine.getThrottle() > 0.92 && speed < 12.0;
 }
